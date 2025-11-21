@@ -33,6 +33,26 @@ const app = Vue.createApp({
     },
 
     methods: {
+        fetchCars() {
+          fetch('http://localhost:8080/api/cars')
+          .then(res => res.json())
+          .then(data => {
+            // API 回傳格式需為陣列，每筆含 brand/model/year...等字段        
+            this.cars = data.map(c => ({
+              ...c,
+              validImage: c.image || this.fallbackImage
+            }));
+            this.filteredCars = this.cars;
+          })
+          .catch(err => {        
+            console.error('API 錯誤:', err);
+            alert('無法取得車輛資料 API');            
+          })
+
+          this.cars.forEach(c => c.validImage = c.image);
+          this.filteredCars = this.cars;
+        },
+        /*
         generateFakeData() {
             const brands = ["Toyota", "Honda", "Mazda", "Nissan"]; 
             const models = ["Altis", "Civic", "CX-5", "Sentra", "Yaris", "Accord"]; 
@@ -58,7 +78,7 @@ const app = Vue.createApp({
             this.cars.forEach(c => c.validImage = c.image);
             this.filteredCars = this.cars;
         },
-
+        */
         onImgError(event) {
             event.target.src = this.fallbackImage;
         },
@@ -88,7 +108,8 @@ const app = Vue.createApp({
     },
 
     mounted() {
-        this.generateFakeData();
+      this.fetchCars();
+        // this.generateFakeData();
     }
 });
 
