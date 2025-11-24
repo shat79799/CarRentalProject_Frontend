@@ -4,8 +4,7 @@ const app = Vue.createApp({
             cars: [],
             page: 1,
             perPage: 10,
-            loading: true,          // ⭐ 新增：控制 skeleton UI
-            fallbackImage: "https://via.placeholder.com/300x160?text=No+Image"
+            loading: true   // Skeleton UI 控制（仍保留頁面載入動畫，但圖片不再使用 fallback）
         };
     },
 
@@ -22,7 +21,7 @@ const app = Vue.createApp({
 
     methods: {
         async fetchCars() {
-            this.loading = true;   // 顯示 skeleton
+            this.loading = true;
 
             try {
                 const res = await fetch("http://localhost:8080/api/car");
@@ -30,22 +29,23 @@ const app = Vue.createApp({
 
                 const data = await res.json();
 
-                // ⭐ 對應前面結構：加上合法圖片欄位 fallback
+                // 直接使用 API 提供的 image_path，不再使用 fallback
                 this.cars = (data || []).map(c => ({
                     ...c,
-                    validImage: c.image_path || this.fallbackImage
+                    validImage: c.image_path   // 直接使用 API 路徑
                 }));
-
+                
             } catch (err) {
                 console.error("取得車輛資料失敗:", err);
                 this.cars = [];
             } finally {
-                this.loading = false;  // 隱藏 skeleton
+                this.loading = false;
             }
         },
 
+        // 取消圖片錯誤 fallback
         onImgError(event) {
-            event.target.src = this.fallbackImage;
+            // 不做任何處理，保留 API 的圖片連結
         },
 
         gotoDetail(car) {
