@@ -32,8 +32,11 @@ const app = Vue.createApp({
                 // 直接使用 API 提供的 image_path，不再使用 fallback
                 this.cars = (data || []).map(c => ({
                     ...c,
-                    validImage: c.image_path   // 直接使用 API 路徑
+                    validImage: ('.' + c.imagePath)   // 直接使用 API 路徑
                 }));
+
+                // ⭐ 列印車輛圖片路徑到 console
+                this.cars.forEach(car => console.log(`車輛ID=${car.id} 圖片路徑:`, car.validImage));                
                 
             } catch (err) {
                 console.error("取得車輛資料失敗:", err);
