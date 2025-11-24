@@ -23,39 +23,44 @@
 <body>
     <div id="app" class="container py-4">
 
-        <!-- 篩選區 -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <select class="form-select" v-model="selectedBrand">
-                    <option value="">篩選車廠（brand）</option>
-                    <option v-for="b in uniqueBrands" :key="b">{{ b }}</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <select class="form-select" v-model="selectedModel">
-                    <option value="">篩選車型（model）</option>
-                    <option v-for="m in uniqueModels" :key="m">{{ m }}</option>
-                </select>
-            </div>
-            <div class="col-md-2 d-grid">
-                <button class="btn btn-primary" @click="applyFilter">套用篩選</button>
-            </div>
-            <div class="col-md-2 d-grid">
-                <button class="btn btn-secondary" @click="clearFilter">清除篩選</button>
+        <!-- Skeleton Loading -->
+        <div v-if="isLoading" class="row g-4">
+            <div class="col-md-4" v-for="n in 6" :key="n">
+                <div class="card p-2">
+                    <div class="placeholder-glow">
+                        <div class="card-img-top car-image placeholder"></div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title placeholder-glow">
+                            <span class="placeholder col-8"></span>
+                        </h5>
+                        <p class="card-text placeholder-glow">
+                            <span class="placeholder col-6"></span><br>
+                            <span class="placeholder col-4"></span><br>
+                            <span class="placeholder col-5"></span>
+                        </p>
+                        <button class="btn btn-secondary disabled placeholder col-12"></button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 車輛列表 -->
+        <!-- 車輛列表（資料載入後顯示） -->
+        <div v-else class="row g-4">
         <div class="row g-4">
             <div class="col-md-4" v-for="car in paginatedCars" :key="car.id">
                 <div class="card car-card" @click="gotoDetail(car)">
                     <img :src="car.validImage" class="card-img-top car-image" @error="onImgError($event)">
                     <div class="card-body">
-                        <h5 class="card-title">{{ car.brand }} - {{ car.model }}</h5>
+                        <h5 class="card-title">{{ car.name }}</h5>
                         <p class="card-text">
-                            年份：{{ car.year }} <br>
-                            座位：{{ car.seat }} <br>
-                            排氣量：{{ car.cc }} cc
+                            座位：{{ car.seats }} <br>
+                            車門：{{ car.doors }} <br>
+                            行李空間：{{ car.luggage }} <br>
+                            排氣量：{{ car.cc }} cc <br>
+                            燃料：{{ car.fuel }} <br>
+                            價格：{{ car.price }} 元/天 <br>
+                            里程費：{{ car.mileage_fee }} 元/km
                         </p>
                         <button class="btn btn-success w-100" @click.stop="gotoBuy(car)">前往購買</button>
                     </div>

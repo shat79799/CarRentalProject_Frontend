@@ -2,100 +2,50 @@ const app = Vue.createApp({
     data() {
         return {
             cars: [],
-            filteredCars: [],
             page: 1,
             perPage: 10,
-
-            selectedBrand: "",
-            selectedModel: "",
-
-            fallbackImage: "https://via.placeholder.com/300x160?text=No+Image",
+            loading: true,          // ⭐ 新增：控制 skeleton UI
+            fallbackImage: "https://via.placeholder.com/300x160?text=No+Image"
         };
     },
 
     computed: {
-        uniqueBrands() {
-            return [...new Set(this.cars.map(c => c.brand))];
-        },
-
-        uniqueModels() {
-            return [...new Set(this.cars.map(c => c.model))];
-        },
-
         totalPages() {
-            return Math.ceil(this.filteredCars.length / this.perPage);
+            return Math.ceil(this.cars.length / this.perPage);
         },
 
         paginatedCars() {
             const start = (this.page - 1) * this.perPage;
-            return this.filteredCars.slice(start, start + this.perPage);
+            return this.cars.slice(start, start + this.perPage);
         }
     },
 
     methods: {
-        fetchCars() {
-          fetch('http://localhost:8080/api/cars')
-          .then(res => res.json())
-          .then(data => {
-            // API 回傳格式需為陣列，每筆含 brand/model/year...等字段        
-            this.cars = data.map(c => ({
-              ...c,
-              validImage: c.image || this.fallbackImage
-            }));
-            this.filteredCars = this.cars;
-          })
-          .catch(err => {        
-            console.error('API 錯誤:', err);
-            alert('無法取得車輛資料 API');            
-          })
+        async fetchCars() {
+            this.loading = true;   // 顯示 skeleton
 
-          this.cars.forEach(c => c.validImage = c.image);
-          this.filteredCars = this.cars;
-        },
-        /*
-        generateFakeData() {
-            const brands = ["Toyota", "Honda", "Mazda", "Nissan"]; 
-            const models = ["Altis", "Civic", "CX-5", "Sentra", "Yaris", "Accord"]; 
+            try {
+                const res = await fetch("http://localhost:8080/api/car");
+                if (!res.ok) throw new Error("API 回傳錯誤");
 
-            for (let i = 1; i <= 50; i++) {
-                const brand = brands[Math.floor(Math.random() * brands.length)];
-                const model = models[Math.floor(Math.random() * models.length)];
+                const data = await res.json();
 
-                this.cars.push({
-                    id: i,
-                    brand,
-                    model,
-                    seat: 4 + Math.floor(Math.random() * 3),
-                    year: 2015 + Math.floor(Math.random() * 10),
-                    cc: 1500 + Math.floor(Math.random() * 2000),
-                    image: Math.random() > 0.5
-                        ? `https://picsum.photos/seed/car${i}/400/200`
-                        : "https://invalid-url-example.com/not_found.jpg",
-                    validImage: ""
-                });
+                // ⭐ 對應前面結構：加上合法圖片欄位 fallback
+                this.cars = (data || []).map(c => ({
+                    ...c,
+                    validImage: c.image_path || this.fallbackImage
+                }));
+
+            } catch (err) {
+                console.error("取得車輛資料失敗:", err);
+                this.cars = [];
+            } finally {
+                this.loading = false;  // 隱藏 skeleton
             }
-
-            this.cars.forEach(c => c.validImage = c.image);
-            this.filteredCars = this.cars;
         },
-        */
+
         onImgError(event) {
             event.target.src = this.fallbackImage;
-        },
-
-        applyFilter() {
-            this.page = 1;
-            this.filteredCars = this.cars.filter(c => {
-                return (!this.selectedBrand || c.brand === this.selectedBrand) &&
-                       (!this.selectedModel || c.model === this.selectedModel);
-            });
-        },
-
-        clearFilter() {
-            this.selectedBrand = "";
-            this.selectedModel = "";
-            this.filteredCars = this.cars;
-            this.page = 1;
         },
 
         gotoDetail(car) {
@@ -108,8 +58,7 @@ const app = Vue.createApp({
     },
 
     mounted() {
-      this.fetchCars();
-        // this.generateFakeData();
+        this.fetchCars();
     }
 });
 
